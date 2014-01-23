@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="questions-servlet-spring" default="dist"
+         xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+<property name="spring.version" value="3.2.4.RELEASE" />
+
+<target name="init">
+    <mkdir dir="classes" />
+    <mkdir dir="dist" />
+    <artifact:dependencies pathId="dependency.classpath"
+                           filesetId="dependency.fileset">
+        <dependency groupId="javax.servlet"
+                    artifactId="javax.servlet-api"
+                    version="3.0.1" />
+        <dependency groupId="org.springframework"
+                    artifactId="spring-context"
+                    version="${spring.version}" />
+        <dependency groupId="org.springframework"
+                    artifactId="spring-web"
+                    version="${spring.version}" />
+	<dependency groupId="org.hsqldb" 
+		    artifactId="hsqldb" 
+		    version="2.3.0"/>
+    </artifact:dependencies>
+</target>
+
+<target name="compile" depends="init">
+    <javac includeantruntime="false"
+           srcdir="src"
+           destdir="classes">
+        <classpath refid="dependency.classpath" />
+    </javac>
+</target>
+
+<target name="dist" depends="compile">
+    <war destfile="dist/questions.war" webxml="src/web.xml">
+        <classes dir="classes" />
+        <mappedresources>
+            <fileset file="src/beans.xml" />
+            <globmapper from="*" to="WEB-INF/*" />
+        </mappedresources>
+        <mappedresources>
+            <fileset refid="dependency.fileset" />
+            <chainedmapper>
+                <flattenmapper />
+                <globmapper from="*" to="WEB-INF/lib/*" />
+            </chainedmapper>
+        </mappedresources>
+    </war>
+</target>
+
+<target name="clean">
+    <delete dir="classes" />
+    <delete dir="dist" />
+</target>
+
+</project>

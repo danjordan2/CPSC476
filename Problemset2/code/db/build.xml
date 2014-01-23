@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<project name="hqsqldb">
+
+    <target name="start" depends="init"
+            description="Start HQSLDB">
+        <java classname="org.hsqldb.server.Server"
+              classpath="lib/hsqldb.jar"
+              dir="etc"
+              fork="true"
+              spawn="true" />
+        <echo message="HSQLDB started" />
+    </target>
+
+    <target name="stop" depends="stop-server, check-stopped"
+            description="Stop HSQLDB"/>
+
+    <target name="status" depends="connection-ok, connection-error"
+            description="Check if HSQLDB is running" />
+
+    <target name="manage"
+            description="Start Database Manager GUI">
+        <java classname="org.hsqldb.util.DatabaseManagerSwing"
+              classpath="lib/hsqldb.jar"
+              fork="true"
+              spawn="true">
+            <arg value="--rcFile" />
+            <arg value="etc/sqltool.rc" />
+            <arg value="--urlid" />
+            <arg value="cpsc476" />
+        </java>
+    </target>
+    
+    <target name="clean" depends="stop"
+            description="Delete HSQLDB database">
+        <delete dir="data" />
+    </target>
+
+    <target name="check-db-exists">
+        <available file="data" type="dir" property="db.exists" />
+    </target>
+
+    <target name="init" depends="check-db-exists" unless="db.exists">
+        <mkdir dir="data" />
+        <java classname="org.hsqldb.cmdline.SqlTool"
+              classpath="lib/sqltool.jar"
+              failonerror="true">
+            <arg value="--rcFile=etc/sqltool.rc" />
+            <arg value="--sql" />
+            <arg value="" />
+            <arg value="create" />
+        </java>
+    </target>
+
+    <target name="test-connection">
+        <java classname="org.hsqldb.cmdline.SqlTool"
+              classpath="lib/sqltool.jar"
+              outputproperty="test.output"
+              resultproperty="test.result">
+            <arg value="--rcFile=etc/sqltool.rc" />
+            <arg value="--sql" />
+            <arg value="SELECT implementation_info_name, character_value
+                        FROM information_schema.sql_implementation_info
+                        WHERE implementation_info_name
+                            IN ('DBMS NAME', 'DBMS VERSION');" />
+            <arg value="cpsc476" />
+        </java>
+        <condition property="connection.ok">
+            <equals arg1="${test.result}" arg2="0" />
+        </condition>
+    </target>
+
+    <target name="connection-ok" depends="test-connection" if="connection.ok">
+        <echo message="HSQLDB is running" />
+    </target>
+
+    <target name="connection-error" depends="test-connection" unless="connection.ok">
+        <echo message="HSQLDB is not running" />
+    </target>
+
+    <target name="stop-server">
+        <java classname="org.hsqldb.cmdline.SqlTool"
+              classpath="lib/sqltool.jar"
+              outputproperty="stop.output"
+              resultproperty="stop.result">
+            <arg value="--rcFile=etc/sqltool.rc" />
+            <arg value="--sql" />
+            <arg value="SHUTDOWN SCRIPT;" />
+            <arg value="cpsc476" />
+        </java>
+    </target>
+
+    <target name="check-stopped" depends="check-stopped-ok, check-stopped-error" />
+
+    <target name="stop-check">
+        <condition property="stop.ok">
+            <equals arg1="${stop.result}" arg2="3" />
+        </condition>
+        <condition property="stop.stopped">
+            <equals arg1="${stop.result}" arg2="7" />
+        </condition>
+        <condition property="stopped.ok">
+            <or>
+                <isset property="stop.ok" />
+                <isset property="stop.stopped" />
+            </or>
+        </condition>
+    </target>
+
+    <target name="check-stopped-ok" depends="stop-check" if="stopped.ok">
+        <echo message="HSQLDB stopped" />
+    </target>
+
+    <target name="check-stopped-error" depends="stop-check" unless="stopped.ok">
+        <echo message="Error stopping HSQLDB" />
+    </target>
+
+    
+</project>

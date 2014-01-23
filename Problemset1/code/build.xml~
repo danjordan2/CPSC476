@@ -1,0 +1,37 @@
+<!-- 
+Daniel Jordan
+CPSC 476
+daniel_jordan@csu.fullerton.edu
+
+To run coupled non-spring filereader, use target run-coupled
+To run decoupled spring filereader, use target run-decoupled
+-->
+<project name="reader" default="compile-decoupled" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+<property name="src" location="src"/>
+<property name="classes" location="classes"/>
+
+<target name="init">
+	<mkdir dir="${classes}" />
+	<artifact:dependencies pathId="dependency.classpath">
+		<dependency groupId="org.springframework" 
+				    artifactId="spring-context" 
+				    version="3.2.4.RELEASE"/>
+	</artifact:dependencies>
+</target>
+<target name="compile" depends="init">
+	<pathconvert property="dependencies" refid="dependency.classpath"/>
+	<javac classpath="${dependencies}" 
+		   includeantruntime="false" 
+		   srcdir="${src}" 
+		   destdir="${classes}" />
+</target>
+<target name="run-question1" depends="compile">
+	<java classpath="${classes}" classname="com.problemset1.apps.VanillaDataReaderClient"/>
+</target>
+<target name="run-question2" depends="compile">
+	<java classpath="${dependencies}:${classes}" classname="com.problemset1.apps.DecoupledDataReaderClient"/>
+</target>
+<target name="clean">
+	<delete dir="${classes}"/>
+</target>
+</project>

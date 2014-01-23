@@ -1,0 +1,23 @@
+package com.problemset1.apps;
+import java.io.FileNotFoundException;
+import com.problemset1.readers.FileReader;
+
+public class VanillaDataReaderClient {
+  private FileReader fileReader = null;
+  private String fileName = "src/main/resources/text.txt";
+
+  public VanillaDataReaderClient() {
+
+      fileReader = new FileReader(fileName);
+  
+  }
+
+  private String fetchData() {
+    return fileReader.read();
+  }
+
+  public static void main(String[] args) {
+    VanillaDataReaderClient dataReader = new VanillaDataReaderClient();
+    System.out.println("Got data using no-spring: " + dataReader.fetchData());
+  }
+}
