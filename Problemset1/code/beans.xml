@@ -7,5 +7,4 @@
     <bean name="reader" class="com.problemset1.readers.FileReader">
         <constructor-arg value="src/main/resources/text.txt" />
     </bean>
-
 </beans>
